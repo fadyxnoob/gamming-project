@@ -1,0 +1,49 @@
+.contact-banner {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url(../images/contact-bg.jpg);
+  background-repeat: no-repeat;
+  background-position: top center;
+  background-size: cover;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-attachment: fixed;
+}
+.contact-banner h1 {
+  font-size: 50px !important;
+  font-weight: 800;
+  border-bottom: 3px solid #ff0e1f;
+}
+.content {
+  margin: 50px 0;
+}
+.content .col-md-6 span {
+  border: 2px solid #ff0e1f;
+  display: inline-block;
+  width: 100px;
+  position: absolute;
+  top: 37%;
+}
+.contact-form .form-control {
+  background: #454545 !important;
+  height: 50px;
+  border: none;
+  border-radius: 0;
+}
+.contact-form .textarea {
+  height: 100px;
+}
+.contact-form .form-control::placeholder {
+  color: #fff;
+}
+.map {
+  margin: 100px 0;
+}
+.testi {
+  margin: 50px 0;
+  padding: 40px 0;
+}
+.map iframe {
+  background: #000;
+}
