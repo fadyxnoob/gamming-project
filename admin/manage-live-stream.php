@@ -3,7 +3,7 @@
     include('include\sidebar.php');
     $live  = '';
         // ======== fetch data from tbl
-        $myObj->sql("SELECT * FROM mange_event");
+        $myObj->sql("SELECT * FROM manage_live_stream");
         $data       = $myObj->getResult();
         if($data > 0){
             $serial     = 0;

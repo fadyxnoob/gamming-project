@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var player = null; 
+    var player = null;
 
     function loadData() {
         $.ajax({
@@ -7,27 +7,28 @@ $(document).ready(function () {
             type: "POST",
             dataType: "json",
             success: function (result) {
-                console.log(result);
-                if (result.streamContent.trim()) {
+                
+                if (result.streamContent) {
                     $("#showLiveStream").html(result.streamContent);
-                    if (result.streamActive) {
-                        enableStreamLink(result.streamLink);
-                    } else {
-                        disableStreamLink();
-                        stopVideo(); 
-                    }
                 } else {
-                    console.error("No stream data found or an error occurred.");
+                    $("#showLiveStream").html('<div class="text-danger">No stream available.</div>');
                 }
 
-                if (result.statusContent.trim()) {
+                if (result.statusContent) {
                     $("#liveEventStatus").html(result.statusContent);
                 } else {
-                    console.error("No status data found or an error occurred.");
+                    $("#liveEventStatus").html('<div class="text-danger">No status found.</div>');
+                }
+
+                if (result.streamActive) {
+                    enableStreamLink(result.streamLink);
+                } else {
+                    disableStreamLink();
                 }
             },
+
             error: function (xhr, status, error) {
-                console.error("An error occurred: " + error);
+                console.error("AJAX ERROR::", xhr.responseText);
             }
         });
     }

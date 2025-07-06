@@ -149,7 +149,7 @@ if ($aboutResult > 0) {
 }
 
 //  ======== LIVE STREAM EVENT START ========= 
-$myObj->sql('SELECT * FROM mange_event ');
+$myObj->sql('SELECT * FROM manage_live_stream ');
 $aboutResult = $myObj->getResult();
 if ($aboutResult > 0) {
     foreach ($aboutResult as $data) {
@@ -251,6 +251,7 @@ if ($winnerResult > 0) {
     </div>
 </div>
 <!-- products -->
+ 
 <!-- live stream -->
 <div class="container-fluid mt-5">
     <div class="container ">
@@ -278,6 +279,9 @@ if ($winnerResult > 0) {
     </div>
 </div>
 <!-- live stream -->
+
+
+
 <!-- event -->
 <div class="container-fluid event">
     <div class="row">
@@ -296,19 +300,23 @@ if ($winnerResult > 0) {
                 ?>
             </h3>
             <div class="count-down row mx-auto">
-                <div class="box  mx-auto">
+                <div class="box  mx-auto w-100 mt-5 d-none" id="demo">
+                    <p class="h2 text-white" id="timerEndsHeading"></p>
+                </div>
+
+                <div class="box  mx-auto afterTimerEnds">
                     <p class="h1 text-white" id="days"></p>
                     <span class="text-light ms-2">Day</span>
                 </div>
-                <div class="box  mx-auto">
+                <div class="box  mx-auto afterTimerEnds">
                     <p class="h1 text-white" id="hours"></p>
                     <span class="text-light ms-2">Hour</span>
                 </div>
-                <div class="box  mx-auto">
+                <div class="box  mx-auto afterTimerEnds">
                     <p class="h1 text-white" id="minutes"></p>
                     <span class="text-light ms-2">Minutes</span>
                 </div>
-                <div class="box  mx-auto">
+                <div class="box  mx-auto afterTimerEnds">
                     <p class="h1 text-white" id="seconds"></p>
                     <span class="text-light ms-2">Sec</span>
                 </div>
@@ -351,37 +359,55 @@ if ($winnerResult > 0) {
 <!-- Winners Of Tournaments -->
 
 <script>
-    let countDownDate = <?php
-                        $deal = '';
-                        $myObj->select('manage_counter', '*', null, 'event_id  DESC', null);
-                        $cuntDownResult = $myObj->getResult();
-                        if ($cuntDownResult > 0) {
-                            foreach ($cuntDownResult as $data) {
-                                $deal_id = $data['event_id'];
-                                $date = $data['event_date'];
-                                $h = $data['event_h'];
-                                $m = $data['event_m'];
-                                $s = $data['event_s'];
-                            }
-                        }
+    // Get time from PHP in ISO string format (yyyy-mm-ddThh:mm:ss)
+    <?php
+    $myObj->select('manage_counter', '*', null, 'event_id DESC', null);
+    $cuntDownResult = $myObj->getResult();
 
-                        echo strtotime("$date $h:$m:$s") ?> * 1000;
-    let now = <?php echo time() ?> * 1000;
+    $finalDateTime = '';
+    if (!empty($cuntDownResult)) {
+        $data  = $cuntDownResult[0];
+        $date  = $data['event_date'];
+        $h     = (int) $data['event_h'];
+        $m     = str_pad($data['event_m'], 2, "0", STR_PAD_LEFT);
+        $s     = str_pad($data['event_s'], 2, "0", STR_PAD_LEFT);
+        $ampm  = strtoupper($data['ampm'] ?? 'AM');
+
+        if ($ampm === 'PM' && $h != 12) {
+            $h += 12;
+        } elseif ($ampm === 'AM' && $h == 12) {
+            $h = 0;
+        }
+
+        $h = str_pad($h, 2, "0", STR_PAD_LEFT);
+        $finalDateTime = "$date" . "T$h:$m:$s";
+    }
+    ?>
+
+    let countDownDate = new Date("<?= $finalDateTime ?>").getTime();
+
+    // Countdown interval
     let x = setInterval(function() {
-        now = now + 1000;
+        let now = new Date().getTime();
         let distance = countDownDate - now;
+
+        if (distance < 0) {
+            clearInterval(x);
+            document.querySelector("#demo").classList.remove("d-none");
+            document.querySelector("#timerEndsHeading").innerHTML = "Joining Time Ends, Wait for the Event to Start";
+            document.querySelectorAll(".afterTimerEnds").forEach(el => el.style.display = "none");
+            return;
+        }
+
         let days = Math.floor(distance / (1000 * 60 * 60 * 24));
         let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
         document.getElementById("days").innerText = days;
         document.getElementById("hours").innerText = hours;
         document.getElementById("minutes").innerText = minutes;
         document.getElementById("seconds").innerText = seconds;
-        if (distance < 0) {
-            clearInterval(x);
-            document.getElementById("demo").innerHTML = "EXPIRED";
-        }
     }, 1000);
 
     function showAlert() {

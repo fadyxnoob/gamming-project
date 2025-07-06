@@ -56,10 +56,14 @@
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+
+    <!-- google map api key -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCdre1QHws5Com3uu74OYKrefyrq72GWZk&libraries=places&loading=async" async></script>
+
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    
+
 <!-- Bootstrap JavaScript Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
     integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
@@ -81,42 +85,56 @@
 <script src="user/assets/js/ajax.js"></script>
 
 <script>
-$(function() {
-    // (Optional) Active an item if it has the class "is-active"	
-    $(".accordion > .accordion-item.is-active").children(".accordion-panel").slideDown();
+    $(function() {
+        // (Optional) Active an item if it has the class "is-active"	
+        $(".accordion > .accordion-item.is-active").children(".accordion-panel").slideDown();
 
-    $(".accordion > .accordion-item").click(function() {
-        // Cancel the siblings
-        $(this).siblings(".accordion-item").removeClass("is-active").children(".accordion-panel")
-            .slideUp();
-        // Toggle the item
-        $(this).toggleClass("is-active").children(".accordion-panel").slideToggle("ease-out");
+        $(".accordion > .accordion-item").click(function() {
+            // Cancel the siblings
+            $(this).siblings(".accordion-item").removeClass("is-active").children(".accordion-panel")
+                .slideUp();
+            // Toggle the item
+            $(this).toggleClass("is-active").children(".accordion-panel").slideToggle("ease-out");
+        });
     });
-});
 
-function initMap() {
-    var map = new google.maps.Map(document.getElementById('map'), {
-        center: {
-            lat: YOUR_LATITUDE,
-            lng: YOUR_LONGITUDE
-        },
-        zoom: 14
-    });
-}
-
-
-// Sticky Nav
-let sticky = document.getElementById("nav-sticky");
-window.addEventListener("scroll", () => {
-    let scrollTop = window.scrollY;
-    if (scrollTop > 200) {
-        sticky.classList.add("sticky");
-    } else {
-        if (scrollTop < 200) {
-            sticky.classList.remove("sticky");
-        }
+    function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: {
+                lat: YOUR_LATITUDE,
+                lng: YOUR_LONGITUDE
+            },
+            zoom: 14
+        });
     }
-});
+
+
+    // Sticky Nav
+    let sticky = document.getElementById("nav-sticky");
+    window.addEventListener("scroll", () => {
+        let scrollTop = window.scrollY;
+        if (scrollTop > 200) {
+            sticky.classList.add("sticky");
+        } else {
+            if (scrollTop < 200) {
+                sticky.classList.remove("sticky");
+            }
+        }
+    });
+
+    function togglePasswordVisibility() {
+        let passwordCheckButton = document.getElementById('passwordCheck');
+        let passwordInputs = document.querySelectorAll('input[type="password"], input[data-password]');
+ if (!passwordCheckButton) return;
+        passwordCheckButton.addEventListener('change', function() {
+            passwordInputs.forEach(input => {
+                input.type = this.checked ? 'text' : 'password';
+            });
+        });
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        togglePasswordVisibility();
+    });
 </script>
 </body>
 

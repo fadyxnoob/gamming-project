@@ -1,44 +1,56 @@
 <?php
-    include('include/header.php');
-    include('include/sidebar.php');
-    $title = $disc = $img = $data_msg = $eventid = '';
-    if(isset($_GET['eventid'])){
-        $eventid = $_GET['eventid'];
-        // fetch data
-        $myObj->select('mange_event', '*', "id = '$eventid'", null, null);
-        $run   = $myObj->getResult();
-        if($run > 0){
-            foreach($run as $row){
-                $link = $row['link'];
-                $thumb = $row['thumb'];
-                $thumbnail ='<img src="assets/upload/'.$thumb.'" alt="profile" width="100%" height="100%">';
-            }
-        }
+include('include/header.php');
+include('include/sidebar.php');
+
+$link = $thumb = $thumbnail = $eventid = '';
+$data_msg = '';
+
+if (isset($_GET['eventid'])) {
+    $eventid = $_GET['eventid'];
+
+    // Fetch data
+    $myObj->select('manage_live_stream', '*', "id = '$eventid'", null, null);
+    $run = $myObj->getResult();
+
+    if (!empty($run)) {
+        $row = $run[0];
+        $link = $row['link'];
+        $thumb = $row['thumb'];
+        $thumbnail = '<img src="assets/upload/' . $thumb . '" alt="thumbnail" width="100%" height="100%">';
     }
-    if(isset($_POST['update'])){
-        $link    = $_POST['link'];
-        $img_name = $_FILES['img']['name'];
-        $img_old  = $_FILES['img']['name'];
-        $tmp_name = $_FILES['img']['tmp_name'];
-        $path     ="assets/upload/".$img_name;                
-        
-        // Update Data 
-        if($img_old == ''){
-            $myObj->update('mange_event', ['link' => $link], "id = '$eventid'");    
-            $update_run = $myObj->getResult();
-        }else{
-            $myObj->update('mange_event', ['link' => $link, 'thumb' => $img_name], "id = '$eventid'");    
-            $update_run = $myObj->getResult();      
-            move_uploaded_file($tmp_name,$path);
-            $update_run = mysqli_query($conn,$update_query);
-        }  
-        if($update_run){
-            echo '<script>window.location.href="manage-live-stream.php"</script>';   
-        }else{
-            echo "Update fail";
-        }    
+}
+
+if (isset($_POST['update'])) {
+    $link = trim($_POST['link']);
+    $img_name = $_FILES['img']['name'];
+    $tmp_name = $_FILES['img']['tmp_name'];
+
+    // Set upload path
+    $path = "assets/upload/" . $img_name;
+
+    // Build update data array
+    $updateData = ['link' => $link];
+
+    // If new image is uploaded
+    if (!empty($img_name)) {
+        $updateData['thumb'] = $img_name;
+        move_uploaded_file($tmp_name, $path);
     }
+
+    // Update query
+    $myObj->update('manage_live_stream', $updateData, "id = '$eventid'");
+    $update_run = $myObj->getResult();
+
+    if ($update_run) {
+        echo '<script>window.location.href="manage-live-stream.php"</script>';
+        exit;
+    } else {
+        $data_msg = '<div class="alert alert-danger">Update failed. Please try again.</div>';
+    }
+}
 ?>
+
+
 <!-- ===== MAIN START ===== -->
 <main>
     <div class="container-fluid px-4">
@@ -52,7 +64,7 @@
                     <form method="POST" enctype="multipart/form-data" class="form_main">
                         <div class="row p-5">
                             <div class="col-12">
-                                <?php echo $data_msg;?>
+                                <?php echo $data_msg; ?>
                             </div>
                             <div class="col">
                                 <div class="mb-3">
@@ -61,7 +73,7 @@
                                         class="inputField" id="title">
                                 </div>
                             </div>
-                           
+
                             <div class="col-12 mb-3">
                                 <div class="row d-flex align-items-center">
                                     <div class="col-4">
@@ -78,7 +90,7 @@
                             <div class="col-12 text-start">
                                 <div class="mt-3">
                                     <button type="submit" name="update" class="SignUp-Btn">Update</button>
-                                       
+
                                 </div>
                             </div>
                         </div>
@@ -89,4 +101,4 @@
     </div>
 </main>
 <!-- ===== MAIN END ===== -->
-<?php include('include/footer.php');?>
+<?php include('include/footer.php'); ?>

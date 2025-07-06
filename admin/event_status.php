@@ -4,7 +4,7 @@
     if(isset($_GET['eventid'])){
         $id      = $_GET['eventid'];
         $thumb_status  = $_GET['status'];
-        $myObj->update('mange_event', ['status' => $thumb_status], "id = '$id'");
+        $myObj->update('manage_live_stream', ['status' => $thumb_status], "id = '$id'");
         $run = $myObj->getResult();
         if($run){
             echo '<script>window.location.href="manage-live-stream.php"</script>';
