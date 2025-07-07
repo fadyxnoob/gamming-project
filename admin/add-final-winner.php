@@ -1,63 +1,85 @@
-<?php 
-    $data_msg = $key_nums = $se_players  ='';
-    include('include/conection.php');
-    include('include/header.php');
-    include('include/sidebar.php');   
-    
-     // <!-- ===== Fetching Final Results -->
-     $winner_candidates  = '';
-     $fetch_last_result  = "SELECT * FROM last_result WHERE `final` = 'Yes' ORDER by id DESC Limit 1";
-     $serial = 1;
-     $run_last_result    = mysqli_query($conn,$fetch_last_result);
-     while( $data_Last_Result   = mysqli_fetch_array($run_last_result)){
-     $serial             =   $serial + 1;
-     $Final_match_id      = $data_Last_Result["id"];
-     $winner             = $data_Last_Result["winner"];
-     $loser              = $data_Last_Result["loser"];
-     $w_scores           = $data_Last_Result["w_scores"];
-     $l_scores           = $data_Last_Result["l_scores"];
-     $final              = $data_Last_Result["final"];
-     $date               = $data_Last_Result["date"];
-     $rsult_date         = date('d M Y', strtotime($date));
+<?php
+// dieclare variables
+$data_msg = $key_nums = $se_players = $winner_candidates  = '';
 
-     $winner_candidates .='<tr>
-               <td>'.$serial.'    </td>
-               <td>'.$winner.'      </td>
-               <td>'.$w_scores.'      </td>
-               <td>'.$loser.'  </td>
-               <td>'.$l_scores.'  </td>
-               <td>'.$rsult_date.'     </td>
-               </tr>';
-     }
-    // Set Button
-    if(isset($_POST['add'])){
-        $winner         = $_POST['winner'];
-        $opponent       = $_POST['loser'];
-        $scores         = $_POST['scores'];
+include('include/header.php');
+include('include/sidebar.php');
 
-        // fetching candidates id from tbl by uname 
-        // Insert Data 
-        
-        $insert_data =  "INSERT INTO `final_winners`(`uname`, `scores`, `opponent`) 
-        VALUES ('$winner','$scores','$opponent')";  
-        $run = mysqli_query($conn,$insert_data);
-        if($run){
-            $update_qu ="UPDATE `manage_candidate` SET 
-                                status = 'Final Won' 
-                                where uname = '$winner';";
-            $update_qu .="UPDATE `manage_candidate` SET 
-                                status = 'Final Loss' 
-                                where uname = '$opponent';";
-            $update_qu .="UPDATE `last_result` SET 
-                                status = 'Clear' 
-                                where id = '$Final_match_id'";
-            $run_up_qu = mysqli_multi_query($conn,$update_qu);
-            echo '<script>window.location.href="manage-Fwinners.php"</script>';
-        }else{
-            $data_msg ='<p class="bg-danger p-2 text-light">Result Not Added</p>'; 
-        } 
+// Fetching Final Results
+$myObj->select('last_result', '*', "final = 'Yes'", 'id DESC', 1);
+$run_last_result = $myObj->getResult();
+
+if (!empty($run_last_result)) {
+    foreach ($run_last_result as $data_Last_Result) {
+        $serial++;
+        $Final_match_id = $data_Last_Result["id"];
+        $winner         = $data_Last_Result["winner"];
+        $loser          = $data_Last_Result["loser"];
+        $w_scores       = $data_Last_Result["w_scores"];
+        $l_scores       = $data_Last_Result["l_scores"];
+        $final          = $data_Last_Result["final"];
+        $date           = $data_Last_Result["date"];
+        $rsult_date     = date('d M Y', strtotime($date));
+
+        $winner_candidates .= '<tr>
+            <td>' . $serial . '</td>
+            <td>' . $winner . '</td>
+            <td>' . $w_scores . '</td>
+            <td>' . $loser . '</td>
+            <td>' . $l_scores . '</td>
+            <td>' . $rsult_date . '</td>
+        </tr>';
     }
-   
+}
+
+if (isset($_POST['add'])) {
+    $winner   = $myObj->escapeString($_POST['winner']);
+    $opponent = $myObj->escapeString($_POST['loser']);
+    $scores   = $myObj->escapeString($_POST['scores']);
+
+    if (!empty($winner) && !empty($opponent) && !empty($scores)) {
+        // Step 1: Insert final winner
+        $insertData = [
+            'uname'    => $winner,
+            'scores'   => $scores,
+            'opponent' => $opponent
+        ];
+        $insertSuccess = $myObj->insert('final_winners', $insertData);
+        if ($insertSuccess) {
+            // Step 2: Update winner status
+            $updateWinner = $myObj->update('manage_candidate', ['status' => 'Final Won'], "uname = '$winner'");
+
+            // Step 3: Update loser status
+            $updateLoser = $myObj->update('manage_candidate', ['status' => 'Final Loss'], "uname = '$opponent'");
+
+            // Step 4: Update result match
+            $updateFinal = $myObj->update('last_result', ['status' => 'Clear'], "id = '$Final_match_id'");
+
+            // Final check
+            if ($updateWinner && $updateLoser && $updateFinal) {
+                echo '<script>window.location.href="manage-Fwinners.php"</script>';
+                exit;
+            } else {
+                $data_msg = '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <p class="m-0 p-0">Error updating records.</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
+            }
+        } else {
+            $data_msg = '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <p class="m-0 p-0">Failed to insert final winner.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>';
+        }
+    } else {
+        $data_msg = '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <p class="m-0 p-0">Please Fill all the Fields.</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>';
+    }
+}
+
+
 ?>
 <!-- ===== MAIN START ===== -->
 <main>
@@ -68,12 +90,13 @@
                 <li class="breadcrumb-item active">Add Final Result</li>
             </ol>
             <div class="row">
+                <div class="col-12">
+                    <?php echo $data_msg; ?>
+                </div>
                 <div class="col">
                     <form method="POST" class="form_main">
                         <div class="row">
-                            <div class="col-12">
-                                <?php echo $data_msg;?>
-                            </div>
+
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="title" class="form-label">Winner</label>
@@ -116,7 +139,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php  echo $winner_candidates; ?>
+                                <?php echo $winner_candidates; ?>
                             </tbody>
                         </table>
                         </table>
@@ -127,4 +150,4 @@
     </div>
 </main>
 <!-- ===== MAIN END ===== -->
-<?php include('include/footer.php');?>
+<?php include('include/footer.php'); ?>

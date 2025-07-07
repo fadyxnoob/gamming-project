@@ -1,28 +1,45 @@
 <?php
-    include('include/conection.php');
-    include('include/header.php');
-    include('include/sidebar.php');
-        $data_msg = '';
-        if(isset($_GET['policy_id'])){
-            $policy_id = $_GET['policy_id'];
-            // fetch data
-            $query = "SELECT * FROM privacy_policy WHERE id ='".$policy_id."'";
-            $run   = mysqli_query($conn,$query);
-            $row   = mysqli_fetch_array($run);
-        }
-        if(isset($_POST['update'])){
-            $disc    = $_POST['disc'];
-            $update_query ="UPDATE `privacy_policy` SET
-                                                `disc`   ='".$disc."'
-                                                WHERE id    = '".$policy_id."' ";
-            $update_run = mysqli_query($conn,$update_query);
-            if($update_run){
-                echo '<script>window.location.href="manage-privacy-policy.php"</script>'; 
-            }else{
-                $data_msg ='<p class="bg-danger">Updating Failed.</p>';
-            }
-        }
+include('include/header.php');
+include('include/sidebar.php');
+
+$data_msg = '';
+$row = [];
+
+// === Fetch policy data ===
+if (isset($_GET['policy_id'])) {
+    $policy_id = $myObj->escapeString($_GET['policy_id']);
+
+    $myObj->select('privacy_policy', '*', "id = '$policy_id'");
+    $result = $myObj->getResult();
+
+    if (!empty($result)) {
+        $row = $result[0];
+    } else {
+        $data_msg = '<p class="bg-danger p-2 text-white">Policy not found.</p>';
+    }
+}
+
+// === Update policy ===
+if (isset($_POST['update'])) {
+    $disc = $myObj->escapeString($_POST['disc']);
+
+    $updateData = [
+        'disc' => $disc
+    ];
+
+    $updated = $myObj->update('privacy_policy', $updateData, "id = '$policy_id'");
+
+    if ($updated) {
+        echo '<script>window.location.href="manage-privacy-policy.php"</script>';
+        exit;
+    } else {
+        $data_msg = '<p class="bg-danger p-2 text-white">Updating Failed.</p>';
+    }
+}
 ?>
+
+
+
 <!-- ===== MAIN START ===== -->
 <main>
     <div class="container-fluid px-4">

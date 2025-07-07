@@ -1,12 +1,14 @@
 <?php
-    include('include/conection.php');
     include('include/header.php');
     include('include/sidebar.php');
+
     $ab_img = $update_msg = '';
+
     if(isset($_GET['about_id'])){
         $about_id = $_GET['about_id'];
 
         // fetch data
+        $myObj->select('manage_about', '*', 'id=$about')
         $query  = "SELECT * FROM `manage_about` WHERE id ='".$about_id."'";
         $run    = mysqli_query($conn,$query);
         $row    = mysqli_fetch_array($run);
@@ -52,6 +54,8 @@
             }
         }
 ?>
+
+
 <!-- ===== MAIN START ===== -->
 <main>
     <div class="container-fluid px-4">

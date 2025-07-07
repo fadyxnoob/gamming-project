@@ -1,6 +1,6 @@
 <?php 
   include('user/include/header.php');
-    $myObj->sql("SELECT * FROM `manage-user-guide` ");
+    $myObj->sql("SELECT * FROM `manage_user_guide` ");
     $run   = $myObj->getResult();
     if($run > 0){
         foreach($run as $row){
@@ -20,7 +20,9 @@
     <div class="container ">
         <div class="row">
             <div class="col policy-cont Box_Shadow px-5 py-2">
-                <?php echo $row['disc'];?>
+                <?php
+              echo html_entity_decode($row['disc']);
+                 ;?>
             </div>
         </div>
     </div>

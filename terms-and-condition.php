@@ -20,7 +20,7 @@
         <div class="row">
             <h1 class="title text-center">Here are the Terms and Conditions</h1>
             <div class="col policy-cont Box_Shadow px-5 py-2">
-                <?php echo $row['disc']?>
+                <?php echo html_entity_decode($row['disc'])?>
             </div>
         </div>
     </div>

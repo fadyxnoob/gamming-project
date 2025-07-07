@@ -8,7 +8,7 @@
             // fetch data
             $myObj->select('manage_user_guide', '*', "id ='$id'", null, null);
             $run   = $myObj->getResult();
-            print_r($run );
+            // print_r($run );
             if($run > 0){
                 foreach($run as $row){
                     $description = $row['disc'];

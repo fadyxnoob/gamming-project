@@ -1,48 +1,66 @@
-<?php 
-    include('include/conection.php');
-    include('include/header.php');
-    include('include/sidebar.php');
-    $data_msg = $key_nums = $last_match_id = '';
+<?php
+include('include/header.php');
+include('include/sidebar.php');
 
-    // last match fetched
-    $approved_candidates = '';
-    $fetch               = "SELECT * FROM manage_match WHERE `status` = 'Played' ORDER BY id ASC ";
-    $data                = mysqli_query($conn, $fetch);
-    while($row           = mysqli_fetch_array($data)){
-        $last_match_id   = $row['id'];   
-        $Player1         = $row['player1'];
-        $player2         = $row['player2'];
+$data_msg = $key_nums = $last_match_id = $approved_candidates = '';
 
+$myObj->select('manage_match', '*', "`status` = 'Played'", 'id ASC', null);
+$data = $myObj->getResult();
 
-            $approved_candidates .='<tr>
-                                        <td>'.$last_match_id.'</td>
-                                        <td>'.$Player1.'      </td>
-                                        <td>'.$player2.'      </td>
-                                    </tr>';
+if (!empty($data)) {
+    foreach ($data as $row) {
+        $last_match_id = $row['id'];
+        $Player1       = $row['player1'];
+        $player2       = $row['player2'];
+
+        $approved_candidates .= '<tr>
+            <td>' . $last_match_id . '</td>
+            <td>' . $Player1 . '</td>
+            <td>' . $player2 . '</td>
+        </tr>';
     }
-    // Set Button
-    if(isset($_POST['add'])){
-        $winner         = $_POST['winner'];
-        $loser          = $_POST['loser'];
-        $Wscore         = $_POST['Wscore'];
-        $Lcores         = $_POST['Lcores'];
-        $final          = $_POST['type'];
+}
 
-        // Insert Data
-        $insert_data =  "INSERT INTO `last_result`(`winner`, `loser`, `w_scores`, `l_scores`,`final`, `match_id`)
-        VALUES ('$winner','$loser','$Wscore','$Lcores','$final','$last_match_id');";  
-        $insert_data .= "UPDATE manage_match SET `status` = 'Clear' WHERE id = '$last_match_id';";     
-        $insert_data .= "UPDATE manage_candidate SET `status` = 'Out' WHERE uname = '$loser';";   
-        $insert_data .= "UPDATE manage_candidate SET `status` = 'Winner' where uname = '$winner'";   
 
-        $run = mysqli_multi_query($conn, $insert_data);
-        if ($run) {
-        // $data_msg = 'Update Query Pass';
+// Set Button
+if (isset($_POST['add'])) {
+    if( empty($_POST['winner']) || empty($_POST['loser']) || empty($_POST['Wscore']) || empty($_POST['Lscore'])) {
+      echo $data_msg = '<p class="bg-danger p-2 text-light">Please Fill All Fields</p>';
+        //   echo '<script>window.location.href="add-last-result.php"</script>';
+        return;
+    }
+
+    $winner     = $myObj->escapeString($_POST['winner']);
+    $loser      = $myObj->escapeString($_POST['loser']);
+    $Wscore     = $myObj->escapeString($_POST['Wscore']);
+    $Lscore     = $myObj->escapeString($_POST['Lscore']);
+    $final      = $myObj->escapeString($_POST['type']);
+
+    // Step 1: Insert into last_result
+    $insertSuccess = $myObj->insert('last_result', [
+        'winner'   => $winner,
+        'loser'    => $loser,
+        'w_scores' => $Wscore,
+        'l_scores' => $Lscore,
+        'final'    => $final,
+        'match_id' => $last_match_id
+    ]);
+
+    // Step 2: Update match status
+    $updateMatch = $myObj->update('manage_match', ['status' => 'Clear'], "id = '$last_match_id'");
+
+    // Step 3: Update loser status
+    $updateLoser = $myObj->update('manage_candidate', ['status' => 'Out'], "uname = '$loser'");
+
+    // Step 4: Update winner status
+    $updateWinner = $myObj->update('manage_candidate', ['status' => 'Winner'], "uname = '$winner'");
+
+    if ($insertSuccess && $updateMatch && $updateLoser && $updateWinner) {
         echo '<script>window.location.href="manage-results.php"</script>';
-        } else {
-        $data_msg = '<p class="bg-danger p-2 text-light">Result Not Added</p>'; 
-        }
+    } else {
+        $data_msg = '<p class="bg-danger p-2 text-light">Result Not Added</p>';
     }
+}
 ?>
 <!-- ===== MAIN START ===== -->
 <main>
@@ -54,7 +72,7 @@
             </ol>
             <div class="row">
                 <div class="col">
-                    <?php echo $data_msg;?>
+                    <?php echo $data_msg; ?>
                     <form method="POST" class="form_main">
                         <div class="row">
                             <div class="col-12">
@@ -82,7 +100,7 @@
                             <div class="col-6">
                                 <div class="mb-3">
                                     <label for="title" class="">Scores</label>
-                                    <input type="text" name="Lcores" value="" class="inputField" id="title">
+                                    <input type="text" name="Lscore" value="" class="inputField" id="title">
                                 </div>
                             </div>
                             <div class="col-6">
@@ -106,14 +124,14 @@
                     <div class="card-body">
                         <table id="datatablesSimple">
                             <thead>
-                            <tr>
-                                <th scope="col">Match Id</th>
-                                <th scope="col">Player 1</th>
-                                <th scope="col">Player 2</th>
-                            </tr>
+                                <tr>
+                                    <th scope="col">Match Id</th>
+                                    <th scope="col">Player 1</th>
+                                    <th scope="col">Player 2</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            <?php echo $approved_candidates; ?>
+                                <?php echo $approved_candidates; ?>
                             </tbody>
                         </table>
                         </table>
@@ -124,4 +142,4 @@
     </div>
 </main>
 <!-- ===== MAIN END ===== -->
-<?php include('include/footer.php');?>
+<?php include('include/footer.php'); ?>

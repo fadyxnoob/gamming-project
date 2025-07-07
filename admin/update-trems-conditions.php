@@ -1,29 +1,41 @@
 <?php
-    include('include/header.php');
-    include('include/sidebar.php');
-        $data_msg = '';
-        if(isset($_GET['terms_id'])){
-            $id = $_GET['terms_id'];
-            // fetch data
-            $myObj->select('terms_conditions', '*', "id = '$id' ", null, null);
-            $run   = $myObj->getResult();
-            if($run > 0){
-                foreach($run as $row){
-                }
-            }
-        }
+include('include/header.php');
+include('include/sidebar.php');
 
-        if(isset($_POST['update'])){
-            $disc    = $myObj->escapeString($_POST['disc']);
-            $myObj->update('terms_conditions', ['dics' => $disc], "id = '$id' ");
-            $update_run = $myObj->getResult();
-            if($update_run){
-                echo '<script>window.location.href="manage-terms-conditions.php"</script>'; 
-            }else{
-                $data_msg ='<p class="bg-danger">Updating Failed.</p>';
-            }
-        }
+$data_msg = '';
+$row = [];
+$id = isset($_GET['terms_id']) ? $myObj->escapeString($_GET['terms_id']) : null;
+
+// === Fetch Data ===
+if ($id) {
+    $myObj->select('terms_conditions', '*', "id = '$id'");
+    $result = $myObj->getResult();
+
+    if (!empty($result)) {
+        $row = $result[0];
+    } else {
+        $data_msg = '<p class="bg-danger p-2 text-white">No terms found with this ID.</p>';
+    }
+} else {
+    $data_msg = '<p class="bg-warning p-2 text-dark">Invalid Request: No ID provided.</p>';
+}
+
+// === Update Data ===
+if (isset($_POST['update'])) {
+    $disc = $myObj->escapeString($_POST['disc']);
+
+    $updated = $myObj->update('terms_conditions', ['disc' => $disc], "id = '$id'");
+
+    if ($updated) {
+        echo '<script>window.location.href="manage-terms-conditions.php"</script>';
+        exit;
+    } else {
+        $data_msg = '<p class="bg-danger p-2 text-white">Updating Failed.</p>';
+    }
+}
 ?>
+
+
 <!-- ===== MAIN START ===== -->
 <main>
     <div class="container-fluid px-4">

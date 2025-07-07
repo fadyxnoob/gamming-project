@@ -1,39 +1,11 @@
 <?php
 
-$data_msg = $key_nums = $se_players  = $Winner_players =  $winner_candidates  = '';
-
 include('include/header.php');
 include('include/sidebar.php');
 
-// Set Button
-if (isset($_POST['add'])) {
-    $player1         = $_POST['player1'];
-    $player2         = $_POST['player2'];
-    $status          = 'Pending';
-    $params = [
-        'player1' => $player1,
-        'player2' => $player2,
-        'status'  => $status,
-    ];
+$data_msg = $key_nums = $se_players  = $Winner_players =  $winner_candidates  = '';
 
-    // fetching candidates id from tbl by uname 
-    // Insert Data 
-    $myObj->insert('manage_match', $params);
-    $run = $myObj->getResult();
-    if ($run) {
-
-        // Assuming $myObj is properly set up with a connection
-        $myObj->update('manage_candidate', ['status' => 'Match'], "uname = '$player1'");
-        $myObj->update('manage_candidate', ['status' => 'Match'], "uname = '$player2'");
-
-        echo '<script>window.location.href="manage-upcomming-match.php"</script>';
-        exit();
-    } else {
-        $data_msg = '<p class="bg-danger p-2 text-light">Match Not Added</p>';
-    }
-}
-
-// <!-- ===== Fetching Approved Candidates -->
+// <!-- ===== Fetching Qualified Candidates -->
 $myObj->select('manage_candidate', '*', "status = 'Qualified'", null, null);
 $qualifiedPlayers = $myObj->getResult();
 
@@ -77,7 +49,6 @@ $countWinners = $myObj->getResult();
 
 if (!empty($winnerPlayers)) {
     foreach ($winnerPlayers as $row) {
-        $serial++;
         $c_id     = $row['id'];
         $uname    = $row['uname'];
         $ign_name = $row['ign_name'];
@@ -100,6 +71,43 @@ if (!empty($winnerPlayers)) {
     }
 }
 
+// Set Button
+if (isset($_POST['add'])) {
+    $player1         = $_POST['player1'];
+    $player2         = $_POST['player2'];
+    $status          = 'Pending';
+    $params = [
+        'player1' => $player1,
+        'player2' => $player2,
+        'status'  => $status,
+    ];
+
+    if ($player1 !== $player2) {
+        // Insert Data 
+        $myObj->insert('manage_match', $params);
+        $run = $myObj->getResult();
+        if ($run) {
+
+            // Assuming $myObj is properly set up with a connection
+            $myObj->update('manage_candidate', ['status' => 'Match'], "uname = '$player1'");
+            $myObj->update('manage_candidate', ['status' => 'Match'], "uname = '$player2'");
+
+            echo '<script>window.location.href="manage-upcomming-match.php"</script>';
+            exit();
+        } else {
+            $data_msg = '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <p class="m-0 p-0 text-dark">Match Not Added</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>';
+        }
+    }
+    $data_msg = '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <p class="m-0 p-0 text-dark">Player 1 and Player 2 can not be the same.</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>';
+}
+
+
 ?>
 <!-- ===== MAIN START ===== -->
 <main>
@@ -109,14 +117,13 @@ if (!empty($winnerPlayers)) {
             <ol class="breadcrumb mb-4">
                 <li class="breadcrumb-item active">Add New Match</li>
             </ol>
+            <div class="col-12">
+                <?php echo $data_msg; ?>
+            </div>
             <div class="row">
                 <div class="col">
                     <form method="POST" class="form_main">
                         <div class="row">
-                            <div class="col-12">
-                                <?php echo $data_msg; ?>
-                            </div>
-
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="title" class="form-label">
